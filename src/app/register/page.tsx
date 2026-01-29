@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/contexts/authContext";
 import Link from "next/link";
+import Spinner from "../components/spinner";
 
 
 const Register = () => {
@@ -52,24 +53,17 @@ const Register = () => {
       console.error('Error response:', error.response);
       console.error('Error message:', error.message);
       
-      // More detailed error messages
-      if (error.code === 'ERR_NETWORK') {
-        setError('Cannot connect to server. Make sure the backend is running at http://localhost:5000');
-      } else if (error.response?.status === 409) {
-        setError('Email or username already exists. Please try different credentials.');
-      } else if (error.response?.status === 400) {
-        setError(error.response?.data?.message || 'Invalid registration data. Please check your inputs.');
-      } else if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else {
-        setError(`Registration failed: ${error.message || 'Please make sure the backend server is running.'}`);
-      }
-      
+      // Use the enhanced error message from API interceptor
+      setError(error.userMessage || error.response?.data?.message || 'Registration failed. Please try again.');
       setLoading(false);
     }
   }
 
   return (
+    <>
+      {loading && (
+        <Spinner fullScreen size="xl" message="Creating your account..." />
+      )}
     <div className="flex min-h-screen justify-center items-center">
       <div className="flex w-[500px] flex-col justify-center items-center px-6 py-12 lg:px-8 bg-white rounded-lg shadow-lg">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -164,6 +158,7 @@ const Register = () => {
         </div>
       </div>
     </div>
+    </>
   )
 }
 

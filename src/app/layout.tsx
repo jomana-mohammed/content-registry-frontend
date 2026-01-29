@@ -3,6 +3,8 @@ import "./globals.css";
 import Header from "./components/header";
 import Footer from "./components/footer";
 import { AuthProvider } from "../contexts/authContext";
+import ErrorBoundary from "./components/errorBoundary";
+import { ToastProvider } from "./components/toast";
 
 
 export const metadata: Metadata = {
@@ -27,11 +29,15 @@ export default function RootLayout({
             {/* Backdrop Overlay (Light Black) */}
             <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
         </div>
-        <AuthProvider>
-          <Header />
-            {children}
-          <Footer />
-        </AuthProvider>
+        <ErrorBoundary>
+          <ToastProvider>
+            <AuthProvider>
+              <Header />
+                {children}
+              <Footer />
+            </AuthProvider>
+          </ToastProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

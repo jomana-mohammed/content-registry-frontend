@@ -3,6 +3,7 @@ import { FileText, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { contentService } from "@/src/lib/services/content.service";
+import Spinner from "../components/spinner";
 
 type TabType = 'file' | 'text';
 
@@ -90,7 +91,8 @@ const UploadPage = () =>{
       }, 1500);
     } catch (error: any) {
       console.error('File upload error:', error);
-      setError(error.response?.data?.message || 'Failed to upload file. Please try again.');
+      // Use the enhanced error message from API interceptor
+      setError(error.userMessage || error.response?.data?.message || 'Failed to upload file. Please try again.');
       setIsUploading(false);
     }
   };
@@ -127,13 +129,20 @@ const UploadPage = () =>{
       }, 1500);
     } catch (error: any) {
       console.error('Text post error:', error);
-      setError(error.response?.data?.message || 'Failed to post content. Please try again.');
+      // Use the enhanced error message from API interceptor
+      setError(error.userMessage || error.response?.data?.message || 'Failed to post content. Please try again.');
       setIsUploading(false);
     }
   };
 
 
     return (
+      <>
+        {/* Full-screen spinner during upload */}
+        {isUploading && (
+          <Spinner fullScreen size="xl" message="Uploading... Please wait" />
+        )}
+        
       <div className="max-w-3xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-white mb-8">Upload Content</h1>
         
@@ -317,10 +326,10 @@ const UploadPage = () =>{
                 {isUploading ? 'Posting...' : 'Post Content'}
               </button>
             </form>
-            </div>
-            )}
           </div>
-        
+        )}
+      </div>
+      </>
     )
 }
 

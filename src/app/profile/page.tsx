@@ -8,6 +8,7 @@ import { authService } from '@/src/lib/services/auth.service';
 import { User } from '@/src/types/user';
 import { ContentResponse, contentService } from '@/src/lib/services/content.service';
 import EditPopUp from '../components/editPopUp';
+import Spinner from '../components/spinner';
 
 type FilterType = 'all' | 'file' | 'text';
 
@@ -19,13 +20,16 @@ const ProfilePage = () => {
   const api = process.env.NEXT_PUBLIC_UPLOAD_URL
 
   const [editingPost, setEditingPost] = useState<Content | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const getUser = async() =>{
     try {
       const response = await authService.getMe();
       setUser(response.user);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to get user:', error);
+      setError(error.userMessage || 'Failed to load profile');
     }
   }
 
@@ -34,14 +38,19 @@ const ProfilePage = () => {
         const response = await contentService.getMyContent();
         setContent(response);
     }
-    catch(error){
+    catch(error: any){
       console.error('Failed to get content:', error);
+      setError(error.userMessage || 'Failed to load content');
     }
   }
 
   useEffect(() => {
-    getUser();
-    getContent();
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([getUser(), getContent()]);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
 
@@ -53,8 +62,9 @@ const ProfilePage = () => {
         const updatedData = content.data.filter(item => item._id !== id);
         setContent({ ...content, data: updatedData });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete content:', error);
+      setError(error.userMessage || 'Failed to delete content');
     }
   };
 
@@ -92,6 +102,18 @@ const ProfilePage = () => {
   return (
 
       <div className="max-w-7xl mx-auto px-4 py-8 relative">
+        {/* Loading Spinner */}
+        {loading && (
+          <Spinner fullScreen size="xl" message="Loading your profile..." />
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
         {/* Edit PopUp */}
         {editingPost && (
             <EditPopUp 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/contexts/authContext";
+import Spinner from "../components/spinner";
 
 
 const Login = () => {
@@ -42,12 +43,17 @@ const Login = () => {
             router.push('/home');
         } catch (error: any) {
             console.log(error);
-            setError(error.response?.data?.message || 'Invalid email or password');
+            // Use the enhanced error message from API interceptor
+            setError(error.userMessage || error.response?.data?.message || 'Invalid email or password');
             setLoading(false);
         }
     }
     
     return (
+    <>
+      {loading && (
+        <Spinner fullScreen size="xl" message="Signing in..." />
+      )}
     <div className="flex min-h-screen justify-center items-center">
       <div className="flex w-[500px] flex-col justify-center items-center px-6 py-12 lg:px-8 bg-white rounded-lg shadow-lg">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -120,6 +126,7 @@ const Login = () => {
         </div>
       </div>
     </div>
+    </>
   )
 }
 

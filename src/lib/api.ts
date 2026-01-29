@@ -54,18 +54,55 @@ api.interceptors.response.use(
         console.error('  - Response Data:', error.response?.data);
         console.error('  - Full Error:', error);
 
-        // Handle common errors globally
-        if (error.response?.status === 401) {
-            // Unauthorized - token expired or invalid
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
+        // Enhance error object with user-friendly messages
+        let userMessage = 'An unexpected error occurred';
+
+        if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+            // Network/Server connection errors
+            userMessage = '⚠️ Cannot connect to the server. Please check your connection or try again later.';
+            error.isNetworkError = true;
+        } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+            // Timeout errors
+            userMessage = '⏱️ Request timed out. The server is taking too long to respond.';
+            error.isTimeoutError = true;
+        } else if (error.response) {
+            // Server responded with error status
+            const status = error.response.status;
+
+            if (status === 400) {
+                userMessage = error.response.data?.message || '❌ Invalid request. Please check your input.';
+            } else if (status === 401) {
+                userMessage = '🔒 Authentication required. Please log in again.';
+                // Unauthorized - token expired or invalid
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                }
+            } else if (status === 403) {
+                userMessage = '🚫 You do not have permission to perform this action.';
+            } else if (status === 404) {
+                userMessage = error.response.data?.message || '🔍 Resource not found.';
+            } else if (status === 409) {
+                userMessage = error.response.data?.message || '⚠️ Conflict: This resource already exists.';
+            } else if (status === 413) {
+                userMessage = '📦 File is too large. Please upload a smaller file.';
+            } else if (status === 429) {
+                userMessage = '⏸️ Too many requests. Please slow down and try again.';
+            } else if (status >= 500) {
+                userMessage = '🔧 Server error. Our team has been notified. Please try again later.';
+                error.isServerError = true;
+            } else {
+                userMessage = error.response.data?.message || `Error: ${status}`;
             }
         }
+
+        // Attach user-friendly message to error
+        error.userMessage = userMessage;
 
         return Promise.reject(error);
     }
 );
+
 
 export default api;

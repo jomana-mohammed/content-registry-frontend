@@ -72,7 +72,8 @@ const EditPopUp = ({ post, onClose }: EditPopUpProps) => {
             }
         } catch (error: any) {
             console.error('Error updating:', error);
-            setError(error.message || 'Failed to update content');
+            // Use the enhanced error message from API interceptor
+            setError(error.userMessage || error.message || 'Failed to update content');
         } finally {
             setIsUploading(false);
         }
