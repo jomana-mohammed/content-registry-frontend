@@ -2,10 +2,11 @@
 import { FileText, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { contentService } from "@/src/lib/services/content.service";
 
 type TabType = 'file' | 'text';
 
-const UploadPage = () => {
+const UploadPage = () =>{
  const [activeTab, setActiveTab] = useState<TabType>('file');
   const [title, setTitle] = useState('');
   const [textContent, setTextContent] = useState('');
@@ -13,6 +14,7 @@ const UploadPage = () => {
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
 
@@ -56,13 +58,24 @@ const UploadPage = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  const handleFileUpload = (e: React.FormEvent) => {
+  const handleFileUpload = async (e: React.FormEvent) =>{
     e.preventDefault();
-    setIsUploading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsUploading(false);
+    if (!selectedFile || !title) {
+      setError('Please provide both title and file');
+      return;
+    }
+    
+    setIsUploading(true);
+    setError('');
+    
+    try {
+      const response = await contentService.createContent(
+        { title, type: 'file' },
+        selectedFile
+      );
+      
+      console.log('File uploaded successfully:', response);
       setShowSuccess(true);
       
       // Reset form
@@ -71,19 +84,35 @@ const UploadPage = () => {
       setSelectedFile(null);
       setFilePreview(null);
       
-      // Redirect to home after 2 seconds
-      setTimeout(() => {
-        router.push('/home');
-      }, 2000);
-    }, 2000);
+      // Redirect to profile after 1.5 seconds
+      setTimeout(() =>{
+        router.push('/profile');
+      }, 1500);
+    } catch (error: any) {
+      console.error('File upload error:', error);
+      setError(error.response?.data?.message || 'Failed to upload file. Please try again.');
+      setIsUploading(false);
+    }
   };
-  const handleTextPost = (e: React.FormEvent) => {
+  const handleTextPost = async (e: React.FormEvent) =>{
     e.preventDefault();
-    setIsUploading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsUploading(false);
+    if (!title || !textContent) {
+      setError('Please provide both title and content');
+      return;
+    }
+    
+    setIsUploading(true);
+    setError('');
+    
+    try {
+      const response = await contentService.createContent({
+        title,
+        content: textContent,
+        type: 'text'
+      });
+      
+      console.log('Text posted successfully:', response);
       setShowSuccess(true);
       
       // Reset form
@@ -92,17 +121,35 @@ const UploadPage = () => {
       setSelectedFile(null);
       setFilePreview(null);
       
-      // Redirect to home after 2 seconds
-      setTimeout(() => {
-        router.push('/home');
-      }, 2000);
-    }, 2000);
+      // Redirect to profile after 1.5 seconds
+      setTimeout(() =>{
+        router.push('/profile');
+      }, 1500);
+    } catch (error: any) {
+      console.error('Text post error:', error);
+      setError(error.response?.data?.message || 'Failed to post content. Please try again.');
+      setIsUploading(false);
+    }
   };
 
 
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-[#111827] mb-8">Upload Content</h1>
+        <h1 className="text-3xl font-bold text-white mb-8">Upload Content</h1>
+        
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+        
+        {/* Success Message */}
+        {showSuccess && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+            ✅ Content uploaded successfully! Redirecting to your profile...
+          </div>
+        )}
             {/* Tab Switcher */}
                 <div className="flex gap-2 mb-6">
                 <button
