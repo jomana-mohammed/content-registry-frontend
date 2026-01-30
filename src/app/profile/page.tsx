@@ -17,7 +17,6 @@ const ProfilePage = () => {
   const [content, setContent] = useState<ContentResponse>();
   const [filter, setFilter] = useState<FilterType>('all');
   const [user , setUser] = useState<User>();
-  const api = process.env.NEXT_PUBLIC_UPLOAD_URL
 
   const [editingPost, setEditingPost] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
@@ -220,7 +219,7 @@ const ProfilePage = () => {
                         {/* 1. IMAGE FILES */}
                         {post.fileType?.startsWith('image/') ? (
                            <img 
-                             src={`${api}${post.fileUrl}`} 
+                             src={post.fileUrl} 
                              alt={post.title}
                              className="w-full h-full object-cover"
                              onError={(e) => {
@@ -254,7 +253,7 @@ const ProfilePage = () => {
                         {/* Overlay with direct link (Hover effect) */}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
                             <a 
-                              href={`${api}${post.fileUrl}`} 
+                              href={post.fileUrl} 
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="bg-white text-gray-900 px-4 py-2 rounded-full font-medium hover:bg-gray-100 flex items-center gap-2 transform hover:scale-105 transition-transform shadow-lg"
