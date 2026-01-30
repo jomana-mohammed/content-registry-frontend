@@ -238,7 +238,22 @@ const ProfilePage = () => {
                               <div className="text-6xl mb-2">📄</div>
                               <span className="font-semibold text-sm">PDF Document</span>
                            </div>
-                        ) : (
+                        ) 
+                          : post.fileType === 'application/docx' || post.fileType?.includes('word') ? (
+                        /* 2. PDF FILES */
+                           <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-500">
+                              <div className="text-6xl mb-2">📝</div>
+                              <span className="font-semibold text-sm">DOCX Document</span>
+                           </div>
+                        ) 
+                        : post.fileType === 'application/txt' ? (
+                        /* 2. PDF FILES */
+                           <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-500">
+                              <div className="text-6xl mb-2">📝</div>
+                              <span className="font-semibold text-sm">TEXT Document</span>
+                           </div>
+                        ) 
+                        : (
                         /* 3. OTHER FILES (Word, Excel, etc) */
                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-500">
                               <div className="mb-2">

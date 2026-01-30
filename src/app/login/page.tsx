@@ -47,7 +47,7 @@ const Login = () => {
             try {
                 await login(validatedData.email, validatedData.password);
                 // Only navigate on successful login
-                router.push('/home');
+                router.push('/');
             } catch (loginError: any) {
                 // Handle login errors (wrong credentials, server errors, etc.)
                 //console.log('Login failed:', loginError);

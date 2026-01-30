@@ -31,7 +31,7 @@ export default function Header() {
     <header className="bg-gray-900">
       <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
         <div className="flex lg:flex-1">
-          <Link href="/home" className="inline-block text-2xl font-bold text-white">
+          <Link href="/" className="inline-block text-2xl font-bold text-white">
               Content<span className="text-indigo-500">Registry</span>
           </Link>
         </div>
@@ -91,7 +91,7 @@ export default function Header() {
         <div className="fixed inset-0 z-50" />
         <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-gray-900 p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-100/10">
           <div className="flex items-center justify-between">
-            <Link href="/home" className="inline-block text-2xl font-bold text-white">
+            <Link href="/" className="inline-block text-2xl font-bold text-white">
               Content<span className="text-indigo-500">Registry</span>
             </Link>
             <button

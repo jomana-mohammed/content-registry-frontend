@@ -42,7 +42,7 @@ const Register = () => {
       try {
         await register(validatedData.email, validatedData.password, validatedData.username);
         // Only navigate on successful registration
-        router.push('/home');
+        router.push('/');
       } catch (registerError: any) {
         // Handle registration errors (duplicate email/username, server errors, etc.)
         //console.error('❌ Registration error:', registerError);

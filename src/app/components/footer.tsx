@@ -8,7 +8,7 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-12 mb-12">
                     {/* Brand Column */}
                     <div>
-                        <Link href="/home" className="inline-block text-2xl font-bold text-white mb-6">
+                        <Link href="/" className="inline-block text-2xl font-bold text-white mb-6">
                             Content<span className="text-indigo-500">Registry</span>
                         </Link>
                         <p className="text-gray-400 mb-6 leading-relaxed max-w-sm">

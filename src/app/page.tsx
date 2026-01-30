@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image";
-import heroImg from "../../../public/hero5.png";
+import heroImg from "../../public/hero5.png";
 import { useAuth } from "@/src/contexts/authContext";
 import { useRouter } from "next/navigation";
 
