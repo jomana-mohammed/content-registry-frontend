@@ -22,7 +22,7 @@ const EditPopUp = ({ post, onClose }: EditPopUpProps) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const router = useRouter();
 
-    const fullUrl = (process.env.NEXT_PUBLIC_UPLOAD_URL || '') + (post.fileUrl || '');
+    const fullUrl = post.fileUrl;
 
     const handleFileSelect = (file: File) => {
         setSelectedFile(file);
@@ -178,7 +178,7 @@ const EditPopUp = ({ post, onClose }: EditPopUpProps) => {
                                       (selectedFile && selectedFile.type.startsWith('image/') && filePreview)) && (
                                         <div className="mb-4 bg-gray-50 rounded-lg p-2 border border-gray-100 relative group">
                                             <img 
-                                                src={selectedFile ? filePreview : fullUrl} 
+                                                src={selectedFile ? filePreview : post.fileUrl} 
                                                 alt="Preview" 
                                                 className="w-full max-h-[200px] object-contain rounded-md"
                                                 onError={(e) => {
@@ -204,7 +204,7 @@ const EditPopUp = ({ post, onClose }: EditPopUpProps) => {
                                             {/* View link for existing file if no new file is selected */}
                                             {!selectedFile && post.fileUrl && (
                                                 <a 
-                                                    href={fullUrl} 
+                                                    href={post.fileUrl} 
                                                     target="_blank" 
                                                     rel="noopener noreferrer"
                                                     className="text-xs text-[#4F46E5] hover:underline flex items-center gap-1 mt-1 font-medium"
