@@ -288,7 +288,7 @@ const UploadPage = () =>{
                       Browse Files
                     </label>
                     <p className="text-xs text-[#6B7280] mt-4">
-                      Accepted formats: images, documents, PDFs
+                      Accepted formats: JPG, JPEG, PNG, GIF, PDF, DOC, DOCX, PPTX and TXT
                     </p>
                   </div>
                 ) : (
