@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { contentService } from "@/src/lib/services/content.service";
 import Spinner from "../components/spinner";
+import { fileUploadSchema, textContentSchema } from "@/src/lib/validationSchemas";
+import { z } from "zod";
 
 type TabType = 'file' | 'text';
 
@@ -16,6 +18,10 @@ const UploadPage = () =>{
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    title?: string;
+    content?: string;
+  }>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
 
@@ -61,77 +67,117 @@ const UploadPage = () =>{
 
   const handleFileUpload = async (e: React.FormEvent) =>{
     e.preventDefault();
-    
-    if (!selectedFile || !title) {
-      setError('Please provide both title and file');
-      return;
-    }
-    
     setIsUploading(true);
     setError('');
+    setFieldErrors({});
     
+    // Validate with Zod
     try {
-      const response = await contentService.createContent(
-        { title, type: 'file' },
-        selectedFile
-      );
+      const validatedData = fileUploadSchema.parse({
+        title,
+        type: 'file' as const
+      });
       
-      console.log('File uploaded successfully:', response);
-      setShowSuccess(true);
+      // Check if file is selected
+      if (!selectedFile) {
+        setError('Please select a file to upload');
+        setIsUploading(false);
+        return;
+      }
       
-      // Reset form
-      setTitle('');
-      setTextContent('');
-      setSelectedFile(null);
-      setFilePreview(null);
-      
-      // Redirect to profile after 1.5 seconds
-      setTimeout(() =>{
-        router.push('/profile');
-      }, 1500);
+      // If validation passes, attempt upload
+      try {
+        const response = await contentService.createContent(
+          { title: validatedData.title, type: 'file' },
+          selectedFile
+        );
+        
+        //console.log('File uploaded successfully:', response);
+        setShowSuccess(true);
+        
+        // Reset form
+        setTitle('');
+        setTextContent('');
+        setSelectedFile(null);
+        setFilePreview(null);
+        
+        // Redirect to profile after 1.5 seconds
+        setTimeout(() =>{
+          router.push('/profile');
+        }, 1500);
+      } catch (uploadError: any) {
+        //console.error('File upload error:', uploadError);
+        setError(uploadError.response?.data?.message || uploadError.message || 'Failed to upload file. Please try again.');
+        setIsUploading(false);
+      }
     } catch (error: any) {
-      console.error('File upload error:', error);
-      // Use the enhanced error message from API interceptor
-      setError(error.userMessage || error.response?.data?.message || 'Failed to upload file. Please try again.');
       setIsUploading(false);
+      
+      // Handle Zod validation errors
+      if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.issues.forEach((err) => {
+          if (err.path[0]) {
+            errors[err.path[0] as string] = err.message;
+          }
+        });
+        setFieldErrors(errors);
+      }
     }
   };
   const handleTextPost = async (e: React.FormEvent) =>{
     e.preventDefault();
-    
-    if (!title || !textContent) {
-      setError('Please provide both title and content');
-      return;
-    }
-    
     setIsUploading(true);
     setError('');
+    setFieldErrors({});
     
+    // Validate with Zod
     try {
-      const response = await contentService.createContent({
+      const validatedData = textContentSchema.parse({
         title,
         content: textContent,
-        type: 'text'
+        type: 'text' as const
       });
       
-      console.log('Text posted successfully:', response);
-      setShowSuccess(true);
-      
-      // Reset form
-      setTitle('');
-      setTextContent('');
-      setSelectedFile(null);
-      setFilePreview(null);
-      
-      // Redirect to profile after 1.5 seconds
-      setTimeout(() =>{
-        router.push('/profile');
-      }, 1500);
+      // If validation passes, attempt to post
+      try {
+        const response = await contentService.createContent({
+          title: validatedData.title,
+          content: validatedData.content,
+          type: 'text'
+        });
+        
+        //console.log('Text posted successfully:', response);
+        setShowSuccess(true);
+        
+        // Reset form
+        setTitle('');
+        setTextContent('');
+        setSelectedFile(null);
+        setFilePreview(null);
+        
+        // Redirect to profile after 1.5 seconds
+        setTimeout(() =>{
+          router.push('/profile');
+        }, 1500);
+      } catch (postError: any) {
+        //console.error('Text post error:', postError);
+        setError(postError.response?.data?.message || postError.message || 'Failed to post content. Please try again.');
+        setIsUploading(false);
+      }
     } catch (error: any) {
-      console.error('Text post error:', error);
-      // Use the enhanced error message from API interceptor
-      setError(error.userMessage || error.response?.data?.message || 'Failed to post content. Please try again.');
       setIsUploading(false);
+      
+      // Handle Zod validation errors
+      if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.issues.forEach((err) => {
+          if (err.path[0]) {
+            errors[err.path[0] as string] = err.message;
+          }
+        });
+        setFieldErrors(errors);
+      }
     }
   };
 
@@ -198,10 +244,16 @@ const UploadPage = () =>{
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-[#E5E7EB] rounded-md bg-white text-[#111827] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
+                  className={`w-full px-4 py-3 border rounded-md bg-white text-[#111827] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:border-transparent ${
+                    fieldErrors.title 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'border-[#E5E7EB] focus:ring-[#4F46E5]'
+                  }`}
                   placeholder="Enter a title for your file"
                 />
+                {fieldErrors.title && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.title}</p>
+                )}
               </div>
 
               {/* Drag & Drop Zone */}
@@ -294,10 +346,16 @@ const UploadPage = () =>{
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-[#E5E7EB] rounded-md bg-white text-[#111827] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
+                  className={`w-full px-4 py-3 border rounded-md bg-white text-[#111827] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:border-transparent ${
+                    fieldErrors.title 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'border-[#E5E7EB] focus:ring-[#4F46E5]'
+                  }`}
                   placeholder="Enter a title for your post"
                 />
+                {fieldErrors.title && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.title}</p>
+                )}
               </div>
 
               {/* Text Content */}
@@ -309,12 +367,20 @@ const UploadPage = () =>{
                   id="text-content"
                   value={textContent}
                   onChange={(e) => setTextContent(e.target.value)}
-                  required
                   rows={12}
-                  className="w-full px-4 py-3 border border-[#E5E7EB] rounded-md bg-white text-[#111827] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent resize-none"
+                  className={`w-full px-4 py-3 border rounded-md bg-white text-[#111827] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:border-transparent resize-none ${
+                    fieldErrors.content 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'border-[#E5E7EB] focus:ring-[#4F46E5]'
+                  }`}
                   placeholder="Write your content here..."
                 />
-                <p className="text-sm text-[#6B7280] mt-2">{textContent.length} characters</p>
+                <div className="flex justify-between mt-2">
+                  <p className="text-sm text-[#6B7280]">{textContent.length} characters</p>
+                  {fieldErrors.content && (
+                    <p className="text-sm text-red-600">{fieldErrors.content}</p>
+                  )}
+                </div>
               </div>
 
               {/* Submit Button */}

@@ -27,7 +27,7 @@ export const contentService = {
                     const percentCompleted = Math.round(
                         (progressEvent.loaded * 100) / (progressEvent.total || 100)
                     );
-                    console.log('📤 Upload progress:', percentCompleted + '%');
+                    //console.log('📤 Upload progress:', percentCompleted + '%');
                 },
             });
             return response.data;

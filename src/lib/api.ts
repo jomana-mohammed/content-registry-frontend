@@ -20,18 +20,18 @@ api.interceptors.request.use(
             }
         }
 
-        console.log('API Request Details:');
-        console.log('  - Method:', config.method?.toUpperCase());
-        console.log('  - URL:', config.url);
-        console.log('  - Base URL:', config.baseURL);
-        console.log('  - Full URL:', `${config.baseURL}${config.url}`);
-        console.log('  - Data:', config.data);
-        console.log('  - Headers:', config.headers);
+        // console.log('API Request Details:');
+        // console.log('  - Method:', config.method?.toUpperCase());
+        // console.log('  - URL:', config.url);
+        // console.log('  - Base URL:', config.baseURL);
+        // console.log('  - Full URL:', `${config.baseURL}${config.url}`);
+        // console.log('  - Data:', config.data);
+        // console.log('  - Headers:', config.headers);
 
         return config;
     },
     (error) => {
-        console.error('Request error:', error);
+        //console.error('Request error:', error);
         return Promise.reject(error);
     }
 );
@@ -39,20 +39,20 @@ api.interceptors.request.use(
 // Response interceptor - runs after every response
 api.interceptors.response.use(
     (response) => {
-        console.log('API Response Success:');
-        console.log('  - Status:', response.status);
-        console.log('  - URL:', response.config.url);
-        console.log('  - Data:', response.data);
+        // console.log('API Response Success:');
+        // console.log('  - Status:', response.status);
+        // console.log('  - URL:', response.config.url);
+        // console.log('  - Data:', response.data);
         return response;
     },
     (error) => {
-        console.error('API Response Error:');
-        console.error('  - Status:', error.response?.status);
-        console.error('  - URL:', error.config?.url);
-        console.error('  - Error Code:', error.code);
-        console.error('  - Error Message:', error.message);
-        console.error('  - Response Data:', error.response?.data);
-        console.error('  - Full Error:', error);
+        // console.error('API Response Error:');
+        // console.error('  - Status:', error.response?.status);
+        // console.error('  - URL:', error.config?.url);
+        // console.error('  - Error Code:', error.code);
+        // console.error('  - Error Message:', error.message);
+        // console.error('  - Response Data:', error.response?.data);
+        // console.error('  - Full Error:', error);
 
         // Enhance error object with user-friendly messages
         let userMessage = 'An unexpected error occurred';
@@ -72,12 +72,21 @@ api.interceptors.response.use(
             if (status === 400) {
                 userMessage = error.response.data?.message || '❌ Invalid request. Please check your input.';
             } else if (status === 401) {
-                userMessage = '🔒 Authentication required. Please log in again.';
+                userMessage = error.response.data?.message || '🔒 Authentication required. Please log in again.';
                 // Unauthorized - token expired or invalid
+                // Only redirect if not already on login or register page
                 if (typeof window !== 'undefined') {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    window.location.href = '/login';
+                    const currentPath = window.location.pathname;
+                    const isAuthPage = currentPath === '/login' || currentPath === '/register';
+
+                    // Only clear tokens and redirect if we're NOT on an auth page
+                    if (!isAuthPage) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.href = '/login';
+                    }
+                    // If we're already on login/register, just let the error propagate
+                    // so the form can display it
                 }
             } else if (status === 403) {
                 userMessage = '🚫 You do not have permission to perform this action.';

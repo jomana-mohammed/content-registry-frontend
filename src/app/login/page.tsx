@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/contexts/authContext";
 import Spinner from "../components/spinner";
+import { loginSchema } from "@/src/lib/validationSchemas";
+import { z } from "zod";
 
 
 const Login = () => {
@@ -11,6 +13,10 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<{
+        email?: string;
+        password?: string;
+    }>({});
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
@@ -28,24 +34,39 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setFieldErrors({});
         
+        // Validate with Zod
         try {
-            // const response = await api.post('/auth/login', {email, password});
-            // console.log(response.data);
-            
-            // // Store token and user data
-            // if (response.data.token) {
-            //     localStorage.setItem('token', response.data.token);
-            //     localStorage.setItem('user', JSON.stringify(response.data.user));
-            // }
+            const validatedData = loginSchema.parse({
+                email,
+                password
+            });
 
-            login(email , password);
-            router.push('/home');
+            // If validation passes, attempt login
+            try {
+                await login(validatedData.email, validatedData.password);
+                // Only navigate on successful login
+                router.push('/home');
+            } catch (loginError: any) {
+                // Handle login errors (wrong credentials, server errors, etc.)
+                //console.log('Login failed:', loginError);
+                setError(loginError.response?.data?.message || loginError.message || 'Wrong email or password');
+                setLoading(false);
+            }
         } catch (error: any) {
-            console.log(error);
-            // Use the enhanced error message from API interceptor
-            setError(error.userMessage || error.response?.data?.message || 'Invalid email or password');
             setLoading(false);
+            
+            // Handle Zod validation errors
+            if (error instanceof z.ZodError) {
+                const errors: Record<string, string> = {};
+                error.issues.forEach((err) => {
+                    if (err.path[0]) {
+                        errors[err.path[0] as string] = err.message;
+                    }
+                });
+                setFieldErrors(errors);
+            }
         }
     }
     

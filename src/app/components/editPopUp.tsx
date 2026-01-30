@@ -58,7 +58,7 @@ const EditPopUp = ({ post, onClose }: EditPopUpProps) => {
             }
 
             if (response.success) {
-                console.log('Updated successfully:', response);
+                //console.log('Updated successfully:', response);
                 setShowSuccess(true);
                 // Refresh page or data
                 router.refresh();
@@ -71,7 +71,7 @@ const EditPopUp = ({ post, onClose }: EditPopUpProps) => {
                  throw new Error(response.message || 'Update failed');
             }
         } catch (error: any) {
-            console.error('Error updating:', error);
+            //console.error('Error updating:', error);
             // Use the enhanced error message from API interceptor
             setError(error.userMessage || error.message || 'Failed to update content');
         } finally {

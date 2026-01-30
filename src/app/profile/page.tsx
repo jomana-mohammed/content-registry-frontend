@@ -28,7 +28,7 @@ const ProfilePage = () => {
       const response = await authService.getMe();
       setUser(response.user);
     } catch (error: any) {
-      console.error('Failed to get user:', error);
+      //console.error('Failed to get user:', error);
       setError(error.userMessage || 'Failed to load profile');
     }
   }
@@ -39,7 +39,7 @@ const ProfilePage = () => {
         setContent(response);
     }
     catch(error: any){
-      console.error('Failed to get content:', error);
+      //console.error('Failed to get content:', error);
       setError(error.userMessage || 'Failed to load content');
     }
   }
@@ -63,7 +63,7 @@ const ProfilePage = () => {
         setContent({ ...content, data: updatedData });
       }
     } catch (error: any) {
-      console.error('Failed to delete content:', error);
+      //console.error('Failed to delete content:', error);
       setError(error.userMessage || 'Failed to delete content');
     }
   };

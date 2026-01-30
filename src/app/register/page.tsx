@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/contexts/authContext";
 import Link from "next/link";
 import Spinner from "../components/spinner";
+import { registerSchema } from "@/src/lib/validationSchemas";
+import { z } from "zod";
 
 
 const Register = () => {
@@ -12,6 +14,11 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+    username?: string;
+  }>({});
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -21,41 +28,40 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setFieldErrors({});
     
-    // Basic validation
-    if (!email || !password || !username) {
-      setError('All fields are required');
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setLoading(false);
-      return;
-    }
-
+    // Validate with Zod
     try {
-    //   const response = await api.post('/auth/register', {email, password, username});
-    //   console.log('✅ Registration successful:', response.data);
-      
-    //   // Store token and user data
-    //   if (response.data.token) {
-    //     localStorage.setItem('token', response.data.token);
-    //     localStorage.setItem('user', JSON.stringify(response.data.user));
-    //   }
-      
-      register(email, password, username);
-      router.push('/home');
+      const validatedData = registerSchema.parse({
+        email,
+        password,
+        username
+      });
 
+      // If validation passes, attempt registration
+      try {
+        await register(validatedData.email, validatedData.password, validatedData.username);
+        // Only navigate on successful registration
+        router.push('/home');
+      } catch (registerError: any) {
+        // Handle registration errors (duplicate email/username, server errors, etc.)
+        //console.error('❌ Registration error:', registerError);
+        setError(registerError.response?.data?.message || registerError.message || 'Registration failed. Please try again.');
+        setLoading(false);
+      }
     } catch (error: any) {
-      console.error('❌ Registration error:', error);
-      console.error('Error response:', error.response);
-      console.error('Error message:', error.message);
-      
-      // Use the enhanced error message from API interceptor
-      setError(error.userMessage || error.response?.data?.message || 'Registration failed. Please try again.');
       setLoading(false);
+      
+      // Handle Zod validation errors
+      if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.issues.forEach((err) => {
+          if (err.path[0]) {
+            errors[err.path[0] as string] = err.message;
+          }
+        });
+        setFieldErrors(errors);
+      }
     }
   }
 
@@ -88,12 +94,18 @@ const Register = () => {
                   id="username"
                   name="username"
                   type="text"
-                  required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm"
+                  className={`block w-full rounded-md border ${
+                    fieldErrors.username ? 'border-red-500' : 'border-gray-300'
+                  } px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                    fieldErrors.username ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
+                  } focus:border-transparent sm:text-sm`}
                   placeholder="Enter your username"
                 />
+                {fieldErrors.username && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.username}</p>
+                )}
               </div>
             </div>
 
@@ -107,13 +119,19 @@ const Register = () => {
                   id="email"
                   name="email"
                   type="email"
-                  required
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm"
+                  className={`block w-full rounded-md border ${
+                    fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                  } px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                    fieldErrors.email ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
+                  } focus:border-transparent sm:text-sm`}
                   placeholder="Enter your email"
                 />
+                {fieldErrors.email && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                )}
               </div>
             </div>
 
@@ -127,13 +145,19 @@ const Register = () => {
                   id="password"
                   name="password"
                   type="password"
-                  required
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm"
+                  className={`block w-full rounded-md border ${
+                    fieldErrors.password ? 'border-red-500' : 'border-gray-300'
+                  } px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                    fieldErrors.password ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
+                  } focus:border-transparent sm:text-sm`}
                   placeholder="Minimum 6 characters"
                 />
+                {fieldErrors.password && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
+                )}
               </div>
             </div>
 
