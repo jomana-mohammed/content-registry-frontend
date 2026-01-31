@@ -71,9 +71,9 @@ const Register = () => {
         <Spinner fullScreen size="xl" message="Creating your account..." />
       )}
     <div className="flex min-h-screen justify-center items-center">
-      <div className="flex w-[500px] flex-col justify-center items-center px-6 py-12 lg:px-8 bg-white rounded-lg shadow-lg">
+      <div className="flex max-w-[500px] flex-col justify-center items-center px-14 sm:px-10 py-12 lg:px-8 bg-white rounded-lg shadow-lg">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-[#111827]">Create your account</h2>
+          <h2 className="mt-4 text-center text-2xl/9 font-bold tracking-tight text-[#111827]">Create your account</h2>
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
