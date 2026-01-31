@@ -12,8 +12,7 @@
 
 ## 🌐 Live Demo
 
-🚀 **[View Live Application](INSERT_YOUR_LIVE_LINK_HERE)**  
-*(Link to be updated after deployment)*
+🚀 **[View Live Application](https://content-registry-eight.vercel.app/)**  
 
 ---
 
@@ -111,12 +110,6 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Frontend (Vercel)
 ### Backend (Render)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
